@@ -1,0 +1,28 @@
+# Input for rpm-lockfile-prototype -> generates rpms.lock.yaml for hermetic builds.
+# Regenerate with:
+#   rpm-lockfile-prototype --outfile rpms.lock.yaml rpms.in.yaml
+# Repos come from the UBI10 base image's default /etc/yum.repos.d/ubi.repo
+# (BaseOS/AppStream/CRB are public; repo IDs are correct by default on UBI10).
+contentOrigin:
+  repofiles:
+    - /etc/yum.repos.d/ubi.repo
+arches:
+  - x86_64
+packages:
+  # Python 3.14 (AppStream alternate stack; satisfies requires-python >=3.13).
+  # UBI10 has no python3.13 RPM; default python3 is 3.12.
+  - python3.14
+  - python3.14-pip
+  - python3.14-devel
+  # Ruby + bundler for hermetic gem install / native-extension compilation.
+  - ruby
+  - ruby-devel
+  - rubygem-bundler
+  # Toolchain for building native extensions (Ruby ffi, etc.).
+  - git
+  - gcc
+  - gcc-c++
+  - make
+  - cmake
+  - libffi-devel
+  - libyaml-devel

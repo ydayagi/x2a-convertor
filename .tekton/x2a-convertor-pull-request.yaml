@@ -1,0 +1,54 @@
+apiVersion: tekton.dev/v1
+kind: PipelineRun
+metadata:
+  annotations:
+    build.appstudio.openshift.io/repo: https://github.com/x2ansible/x2a-convertor?rev={{revision}}
+    build.appstudio.redhat.com/commit_sha: '{{revision}}'
+    build.appstudio.redhat.com/pull_request_number: '{{pull_request_number}}'
+    build.appstudio.redhat.com/target_branch: '{{target_branch}}'
+    pipelinesascode.tekton.dev/max-keep-runs: "3"
+    pipelinesascode.tekton.dev/on-cel-expression: event == "pull_request" && target_branch == "main"
+  labels:
+    appstudio.openshift.io/application: x2a-convertor
+    appstudio.openshift.io/component: x2a-convertor
+    pipelines.appstudio.openshift.io/type: build
+  name: x2a-convertor-on-pull-request
+  # namespace: <TENANT_NAMESPACE>   # set after tenant onboarding (add-namespace.sh)
+spec:
+  params:
+    - name: git-url
+      value: '{{source_url}}'
+    - name: revision
+      value: '{{revision}}'
+    # PR builds publish to a short-lived tag.
+    - name: output-image
+      value: quay.io/redhat-user-workloads/<TENANT_NAMESPACE>/x2a-convertor:on-pr-{{revision}}
+    - name: image-expires-after
+      value: 5d
+    - name: dockerfile
+      value: Dockerfile
+    # --- Product hermetic build requirements -----------------------------
+    - name: hermetic
+      value: "true"
+    - name: prefetch-input
+      value: '[{"type":"rpm","path":"."},{"type":"bundler","path":"."},{"type":"pip","path":"."}]'
+    - name: build-source-image
+      value: "true"
+    - name: build-platforms
+      value:
+        - linux/x86_64
+  pipelineRef:
+    resolver: git
+    params:
+      - name: url
+        value: https://github.com/konflux-ci/build-definitions.git
+      - name: revision
+        value: main
+      - name: pathInPipeline
+        value: pipelines/docker-build-oci-ta/docker-build-oci-ta.yaml
+  taskRunTemplate:
+    serviceAccountName: build-pipeline-x2a-convertor
+  workspaces:
+    - name: git-auth
+      secret:
+        secretName: '{{ git_auth_secret }}'

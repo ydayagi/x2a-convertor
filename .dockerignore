@@ -1,0 +1,17 @@
+# Keep the build context (COPY . /app) minimal and reproducible.
+# Prefetched content (RPMs/gems/wheels) is mounted by Hermeto at /cachi2,
+# NOT taken from the build context, so excluding local caches is safe.
+.git
+.github
+.tekton
+**/__pycache__
+*.pyc
+*.pyo
+.venv
+venv
+vendor
+node_modules
+.pytest_cache
+.ruff_cache
+*.egg-info
+.env

@@ -1,0 +1,55 @@
+apiVersion: tekton.dev/v1
+kind: PipelineRun
+metadata:
+  annotations:
+    build.appstudio.openshift.io/repo: https://github.com/x2ansible/x2a-convertor?rev={{revision}}
+    build.appstudio.redhat.com/commit_sha: '{{revision}}'
+    build.appstudio.redhat.com/target_branch: '{{target_branch}}'
+    pipelinesascode.tekton.dev/max-keep-runs: "3"
+    pipelinesascode.tekton.dev/on-cel-expression: event == "push" && target_branch == "main"
+  labels:
+    appstudio.openshift.io/application: x2a-convertor
+    appstudio.openshift.io/component: x2a-convertor
+    pipelines.appstudio.openshift.io/type: build
+  name: x2a-convertor-on-push
+  # namespace: <TENANT_NAMESPACE>   # set after tenant onboarding (add-namespace.sh)
+spec:
+  params:
+    - name: git-url
+      value: '{{source_url}}'
+    - name: revision
+      value: '{{revision}}'
+    # Replace <TENANT_NAMESPACE> with the Konflux tenant once created.
+    - name: output-image
+      value: quay.io/redhat-user-workloads/<TENANT_NAMESPACE>/x2a-convertor:{{revision}}
+    - name: dockerfile
+      value: Dockerfile
+    # --- Product hermetic build requirements -----------------------------
+    - name: hermetic
+      value: "true"
+    # Prefetch all three content types from the committed lockfiles.
+    # pip picks up requirements.txt + requirements-build.txt by default.
+    - name: prefetch-input
+      value: '[{"type":"rpm","path":"."},{"type":"bundler","path":"."},{"type":"pip","path":"."}]'
+    # SLSA source image (required for Product / registry-standard EC policy).
+    - name: build-source-image
+      value: "true"
+    # x86_64 only to start.
+    - name: build-platforms
+      value:
+        - linux/x86_64
+  pipelineRef:
+    resolver: git
+    params:
+      - name: url
+        value: https://github.com/konflux-ci/build-definitions.git
+      - name: revision
+        value: main
+      - name: pathInPipeline
+        value: pipelines/docker-build-oci-ta/docker-build-oci-ta.yaml
+  taskRunTemplate:
+    serviceAccountName: build-pipeline-x2a-convertor
+  workspaces:
+    - name: git-auth
+      secret:
+        secretName: '{{ git_auth_secret }}'
