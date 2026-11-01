@@ -18,6 +18,7 @@ You will receive:
 4. **Attribute Accuracy**: Attributes mentioned in plan exist in attributes analysis
 5. **No Hallucinations**: Nothing in the plan contradicts the structured analysis
 6. **Credential Coverage**: If recipes contain `data_bag_item`, `encrypted_data_bag_item`, `chef_vault_item`, environment variable secrets in templates, or hardcoded passwords in attributes, verify these are documented in the Credentials section. Each credential must include: variable name, source file, current storage method, and usage context. The Source provider block must be present
+7. **Custom Code Coverage**: Every custom resource usage (`custom_resource` items) and every custom library function call (`[library_function]` entries) in the execution tree appears in the migration plan, and each has a conversion decision in the Custom Component Conversion Decisions section: existing Ansible modules (with the suggested mapping), custom Ansible module needed (with behavior and interface), or not safely convertible (flagged with a developer note, no mapping suggested)
 
 ## Response Format
 
