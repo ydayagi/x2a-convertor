@@ -56,7 +56,7 @@ class LLMSettings(BaseSettings):
     model_config = SettingsConfigDict(extra="ignore")
 
     model: str = Field(
-        default="openai/gpt-oss-120b-maas",
+        default="bedrock/global.anthropic.claude-haiku-4-5-20251001-v1:0",
         validation_alias="LLM_MODEL",
         description="Language model to use",
     )

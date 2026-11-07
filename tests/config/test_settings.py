@@ -20,7 +20,7 @@ class TestLLMSettings:
 
     def test_default_values(self):
         settings = LLMSettings()
-        assert settings.model == "openai/gpt-oss-120b-maas"
+        assert settings.model == "bedrock/global.anthropic.claude-haiku-4-5-20251001-v1:0"
         assert settings.max_tokens == 8192
         assert settings.temperature == 0.1
         assert settings.reasoning_effort is None
